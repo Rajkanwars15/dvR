@@ -1,0 +1,275 @@
+---
+title: "Data Visualisation in R"
+output:
+  html_document:
+    df_print: paged
+---
+
+Create a histogram that shows the distribution of characters in a string. Use this function to draw a bar chart for the letters in your first name.
+```{r}
+library(ggplot2)
+ string = "RAJKANWAR"
+ char_count = data.frame(table(strsplit(string, "")[[1]]))
+ colnames(char_count) = c("char", "count")
+ ggplot(char_count, aes(x = char, y = count)) +
+   geom_bar(stat = "identity", aes(fill = char)) +
+   scale_fill_brewer(palette = "Set1") +
+   ggtitle("Distribution of characters in first name")
+```
+Dendogram on US Arrests
+```{r}
+library(plotly)
+library(ggplot2)
+library(ggdendro)
+hc1 <- hclust(dist(USArrests), "ave")
+p1 <- ggdendrogram(hc1, rotate = FALSE, size = 2)
+ggplotly(p1)
+
+```
+Draw the linked view for Cloud multivariate dataset (available in UCI repository).
+```{r}
+# Load the library for data visualization
+library(ggplot2)
+# Load the cloud dataset from UCI repository
+idata <- read.csv("cloud.csv", header = TRUE)
+# Plot the linked view for the multivariate dataset using ggplot2
+ggplot(data = idata, aes(x = Visible_mean, y = IR_mean, color = contrast)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") + 
+  xlab("Visible Mean") + 
+  ylab("IR Mean") + 
+  ggtitle("Linked View for Cloud Multivariate Dataset: Visible VS IR Mean")
+
+```
+Draw a graph matrix for Image Segmentation multivariate dataset (available in UCI repository).
+```{r}
+data <- read.csv("segmentation.csv", header = TRUE)
+# Next, we'll use k-means clustering to group the data into clusters
+library(stats)
+kmeans_result <- kmeans(data, centers = 5)
+clusters <- kmeans_result$cluster
+# We'll use the 'ggplot2' package to plot the graph matrix
+library(ggplot2)
+ggplot(data, aes(x = 1, y = 2, color = as.factor(clusters))) + 
+  geom_point(size = 3) + 
+  scale_color_discrete(name = "Cluster") + 
+  xlab("") + ylab("") + 
+  ggtitle("Graph Matrix using K-Means Clustering")
+```
+Draw exploratory graphics of a stock market Dataset.
+```{r}
+library(ggplot2)
+# Load the dataset
+library(tidyquant)
+data <- tq_get("AAPL", get = "stock.prices")
+# Plot a scatter plot of the closing price and volume
+ggplot(data, aes(x = close, y = volume)) +
+  geom_point(color = "red") +
+  ggtitle("Scatter Plot of Closing Price and Volume")
+```
+```{r}
+# Plot a line graph of the closing price over time
+ggplot(data, aes(x = date, y = close)) +
+  geom_line(color = "blue") +
+  ggtitle("Closing Price of Apple Stock Over Time")
+```
+```{r}
+# Plot a histogram of the daily return
+ggplot(data, aes(x = adjusted)) +
+  geom_histogram(binwidth = 1, fill = "green") +
+  ggtitle("Histogram of Daily Returns")
+```
+US Arrests K-means clustering
+```{r}
+library(ggpubr)
+library(ggplot2)
+library(factoextra)
+# Load the USArrests dataset
+data("USArrests")
+df <- USArrests
+# Compute k-means with k = 3
+set.seed(123)
+res.km <- kmeans(scale(df), 3, nstart = 25)
+# K-means clusters showing the group of each state
+res.km$cluster
+fviz_cluster(res.km, data = df,
+            palette = c("#E69F00", "#56B4E9", "#009E73"), 
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw()
+)
+# Dimension reduction using PCA
+res.pca <- prcomp(df, scale = TRUE)
+# Coordinates of states
+ind.coord <- as.data.frame(get_pca_ind(res.pca)$coord)
+# Add clusters obtained using the K-means algorithm
+ind.coord$cluster <- factor(res.km$cluster)
+# Percentage of variance explained by dimensions
+eigenvalue <- round(get_eigenvalue(res.pca), 1)
+variance.percent <- eigenvalue$variance.percent
+```
+Visualize k-nearest-neighbor search, on Ranking in spatial dataset, using D3 quadtrees.
+```{r}
+library(e1071)
+library(caTools)
+library(class)
+library(ggplot2)
+data(iris)
+head(iris)
+# Split data 
+split <- sample.split(iris, SplitRatio = 0.7)
+train_cl <- subset(iris, split == "TRUE")
+test_cl <- subset(iris, split == "FALSE")
+# Feature Scaling
+train_scale <- scale(train_cl[, 1:4])
+test_scale <- scale(test_cl[, 1:4])
+# Fitting KNN Model to training dataset
+classifier_knn <- knn(train = train_scale,
+                      test = test_scale,
+                      cl = train_cl$Species,
+                      k = 1)
+classifier_knn
+# Confusiin Matrix
+cm <- table(test_cl$Species, classifier_knn)
+cm
+# Model Evaluation - Choosing K 
+# Calculate out of Sample error
+misClassError <- mean(classifier_knn != test_cl$Species)
+print(paste('Accuracy =', 1-misClassError))
+# K = 3
+classifier_knn <- knn(train = train_scale,
+                      test = test_scale,
+                      cl = train_cl$Species,
+                      k = 3)
+misClassError <- mean(classifier_knn != test_cl$Species)
+# K = 5
+classifier_knn <- knn(train = train_scale,
+                      test = test_scale,
+                      cl = train_cl$Species,
+                      k = 5)
+misClassError <- mean(classifier_knn != test_cl$Species)
+print(paste('Accuracy =', 1-misClassError))
+# K = 7
+classifier_knn <- knn(train = train_scale,
+                      test = test_scale,
+                      cl = train_cl$Species,
+                      k = 7)
+misClassError <- mean(classifier_knn != test_cl$Species)
+print(paste('Accuracy =', 1-misClassError))
+# K = 15
+classifier_knn <- knn(train = train_scale,
+                      test = test_scale,
+                      cl = train_cl$Species,
+                      k = 15)
+misClassError <- mean(classifier_knn != test_cl$Species)
+print(paste('Accuracy =', 1-misClassError))
+# K = 19
+classifier_knn <- knn(train = train_scale,
+                      test = test_scale,
+                      cl = train_cl$Species,
+                      k = 19)
+misClassError <- mean(classifier_knn != test_cl$Species)
+print(paste('Accuracy =', 1-misClassError))
+#Visiualisation
+ggplot(iris, aes(Petal.Length, Petal.Width, color = Species)) +
+  geom_point(size = 3) +
+  ggtitle("Iris Data Set") +
+  labs(x = "Petal Length", y = "Petal Width", color = "Species") +
+  theme_bw() +
+  geom_point(data = test_cl, aes(Petal.Length, Petal.Width, color = classifier_knn), size = 15, shape = 1)
+```
+Implement data visualization using dendrogram.
+```{r}
+# Load data
+data(mtcars)
+# Compute distances and hierarchical clustering
+dd <- dist(scale(mtcars), method = "euclidean")
+#Ward_D2 means Instead of measuring the distance directly, 
+#it analyzes the variance of clusters
+hc <- hclust(dd, method = "ward.D2")
+library(factoextra)
+fviz_dend(hc, cex = 0.5)
+fviz_dend(hc, cex = 0.5, 
+          main = "Dendrogram - ward.D2",
+          xlab = "Objects", ylab = "Distance", sub = "")
+#fviz_dend(hc, cex = 0.5, horiz = TRUE)
+fviz_dend(hc, k = 4, cex=0.5,  k_colors = c("blue", "green", "red", "black"),                # Cut in four groups
+          color_labels_by_k = TRUE, ggtheme = theme_gray() )
+```
+Visualize functional data with an application to eBay’s online auctions.
+```{r}
+# Load required packages
+library(fda)
+library(fda.usc)
+# Load Shill Bidding Dataset
+url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/00562/Shill%20Bidding%20Dataset.csv"
+shill <- read.csv(url, header = TRUE)
+# Drop non-relevant variables
+shill <- shill[, c("Auction_Bids", "Auction_Duration")]
+# Sort the data by Auction_Bids
+shill <- shill[order(shill$Auction_Bids),]
+# Create a functional data object from the Auction_Duration variable using B-splines
+basis <- create.bspline.basis(rangeval = range(shill$Auction_Bids), nbasis = 10)
+fd_shill <- smooth.basis(shill$Auction_Bids, shill$Auction_Duration, basis)
+# Plot the functional data object
+plot(fd_shill, xlab = "Number of Bids", ylab = "Auction Duration",
+     main = "Relationship between Bids and Auction Duration in eBay Auctions",
+     col = "red", lwd = 2)
+```
+Show graphical data representation in classification using Iris dataset
+```{r}
+# Load required libraries
+library(ggplot2)
+library(datasets)
+library(reshape2)
+# Load iris dataset
+data(iris)
+# Define custom color palette
+my_colors <- c("#E69F00", "#56B4E9", "#009E73")
+# Scatterplot with regression line
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
+  geom_point(color = my_colors[1]) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Sepal Length", y = "Sepal Width", title = "Iris Dataset with Regression Line") +
+  theme_classic()
+# Boxplot of Sepal length by Species
+ggplot(iris, aes(Species, Sepal.Length)) +
+  geom_boxplot(fill = my_colors[2]) +
+  labs(x = "Species", y = "Sepal Length", title = "Iris Dataset: Sepal Length by Species") +
+  theme_classic()
+# Histogram of Petal width by Species
+ggplot(iris, aes(Petal.Width, fill = Species)) +
+  geom_histogram(alpha = 0.5, bins = 30) +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Petal Width", y = "Count", title = "Iris Dataset: Petal Width by Species") +
+  theme_classic()
+# Stacked bar chart of Petal length by Species
+ggplot(iris, aes(Species, Petal.Length, fill = Species)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = my_colors) +
+  labs(x = "Species", y = "Petal Length", title = "Iris Dataset: Petal Length by Species") +
+  theme_classic()
+# Heatmap of correlations between variables in iris dataset
+iris_cor <- round(cor(iris[,1:4]), 2) # Calculate correlation matrix
+ggplot(data = melt(iris_cor), aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = my_colors[1], high = my_colors[3], mid = "white",
+                       midpoint = 0, limit = c(-1,1), space = "Lab",
+                       name="Correlation") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1,
+                                   size = 10, hjust = 1)) +
+  labs(x = "", y = "", title =
+         "Correlations between variables in Iris dataset")
+```
+Draw a graph matrix for mushroom dataset (available in UCI repository).
+```{r}
+# Load the necessary packages
+library(readr)
+# Load the mushroom dataset
+mushrooms <- read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/mushroom/agaricus-lepiota.data",
+                      col_names = FALSE)
+library(GGally)
+# Draw the graph matrix
+ggpairs(mushrooms, aes(colour = mushrooms$X1))
+```
